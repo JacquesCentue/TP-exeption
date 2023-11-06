@@ -7,8 +7,8 @@ def divEntier(x:int, y:int)->int :
     if x<y :
         return 0
     else:
-        x=x-y
-        return divEntier(x,y) +1
+        x = x - y
+        return divEntier(x, y) + 1
 
 
 
@@ -19,15 +19,15 @@ def fichier() :
                 try :
 
                     l=l.rstrip("\n\r")
-
                 except IOError:
-                    print("Erreur de lecture le disque est plein")
+                    print("Erreur d'écriture")
                 except FileExistsError:
                     print("le fichier existe deja")
                 except PermissionError:
                     print("vous n'avez pas les permissions néssécaires pour ouvrir le fichier")
                 else:
                     print(l)
+
     except FileNotFoundError:
         print("le fichier spécifié n'existe pas")
     finally:
