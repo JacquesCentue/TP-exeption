@@ -12,9 +12,9 @@ def divEntier(x:int, y:int)->int :
 
 
 
-def fichier(fichier:str) :
+def fichier() :
     try :
-        with open(fichier,'r') as f:
+        with open('test.txt','r') as f:
             for l in f:
                 try :
 
@@ -33,10 +33,11 @@ def fichier(fichier:str) :
     finally:
         f.close()
 
-if __name__ == '__main__':
-    fichier="test.txt"
 
-     print(fichier(fichier))
+if __name__ == '__main__':
+
+
+    fichier()
 
 
 
