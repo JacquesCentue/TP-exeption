@@ -40,10 +40,6 @@ if __name__ == '__main__':
     fichier()
 
 
-
-
-
-
     try :
         x=int(input("entrer la valeur de x : "))
         y=int(input("entrer la valeur de y : "))
