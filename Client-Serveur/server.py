@@ -28,14 +28,16 @@ print("Connection recue depuis le client : ",addr_ip_client)
 message="Connecté au serveur !"
 c.send(message.encode())
 
-while True:
+SRVstatus=1
+while SRVstatus==1:
     msgClient = c.recv(1024)
-    print ("C>", msgClient)
-    msgServeur=msgClient
-    c.send(msgClient.encode())
-    if msgClient== "bye" or msgClient == "arret":
-        break
-        msgServeur = raw_input("S> ")
-        c.send(msgServeur)
-# on ferme la connexion
+    while msgClient!="bye" or msgClient!="arret":
+        s.listen(5)
+        print ("C>", msgClient)
+        msgServeur=msgClient
+        c.send(msgClient)
+        msgClient = c.recv(1024)
+
+    print("fermeture du serveur")
+    SRVstatus=0
 c.close()
