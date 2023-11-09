@@ -36,4 +36,4 @@ while True:
         msgServeur = raw_input("S> ")
         c.send(msgServeur)
 # on ferme la connexion
-        c.close()
+c.close()

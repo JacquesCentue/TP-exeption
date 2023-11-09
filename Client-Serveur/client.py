@@ -1,4 +1,4 @@
-
+# -*- coding: latin-1 -*-
 import socket
 
 
@@ -6,7 +6,7 @@ server = socket.socket()
 
 
 port = 4090
-addr_ip = "10.128.1.65"
+addr_ip = "10.128.6.12"
 server.connect((socket.gethostbyaddr(addr_ip)[0], port))
 
 
@@ -18,4 +18,4 @@ while True:
     msgServeur = raw_input("S> ")
     c.send(msgServeur)
     # fermeture du socket
-    server.close()
+server.close()
