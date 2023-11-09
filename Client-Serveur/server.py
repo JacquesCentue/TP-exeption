@@ -31,7 +31,9 @@ c.send(message.encode())
 while True:
     msgClient = c.recv(1024)
     print ("C>", msgClient)
-    if msgClient.upper()== "FIN" or msgClient == "":
+    msgServeur=msgClient
+    c.send(msgClient.encode())
+    if msgClient== "bye" or msgClient == "arret":
         break
         msgServeur = raw_input("S> ")
         c.send(msgServeur)

@@ -12,10 +12,8 @@ server.connect((socket.gethostbyaddr(addr_ip)[0], port))
 
 while True:
     print(server.recv(1024))
-    server.send("Bonjour ici le client")
-    if msgClient.upper()== "FIN" or msgClient == "":
-       break
-    msgServeur = raw_input("S> ")
-    c.send(msgServeur)
-    # fermeture du socket
+    message=input("Message : ")
+    server.send(message.encode())
+    msgSRV = server.recv(1024)
+    print("S>", msgSRV)
 server.close()
