@@ -5,12 +5,17 @@ window = QWidget()
 layout = QVBoxLayout()
 layout.addWidget(QLabel("Saisir votre nom :"))
 layout.addWidget(QLineEdit())
-layout.addWidget(QPushButton("valider"))
+ok = layout.addWidget(QPushButton("valider"))
 layout.addWidget(QLabel())
-layout.addWidget(QPushButton("Quitter"))
+quit = layout.addWidget(QPushButton("Quitter"))
+
+
 
 window.setLayout(layout)
 window.show()
+def __actionQuitter(self):
+    app.exit(0)
 
 if __name__ == '__main__':
     sys.exit(app.exec_())
+    quit.clicked.connect(__actionQuitter)
