@@ -5,7 +5,7 @@ class MainWindows(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("une premiere fenetre")
-        self.setLayout(QVBoxLayout())
+        self.setLayout(QGridLayout())
         self.resize(250,100)
         my_label = QLabel("Saisir votre nom :")
         my_entry=QLineEdit()
@@ -15,11 +15,11 @@ class MainWindows(QWidget):
         my_button = QPushButton("OK",clicked =lambda: ok())
         my_button2= QPushButton("Quitter",clicked =lambda: quit())
 
-        self.layout().addWidget(my_label)
-        self.layout().addWidget(my_entry)
-        self.layout().addWidget(my_label2)
-        self.layout().addWidget(my_button)
-        self.layout().addWidget(my_button2)
+        self.layout().addWidget(my_label,0, 0)
+        self.layout().addWidget(my_entry,0, 1)
+        self.layout().addWidget(my_label2,1, 0)
+        self.layout().addWidget(my_button,1, 1)
+        self.layout().addWidget(my_button2,2, 2)
 
         def ok():
             if my_entry.text() !="":
