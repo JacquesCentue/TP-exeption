@@ -15,7 +15,6 @@ class MainWindows(QWidget):
         self.QlineEdit = QLineEdit(tbxTemperature)
         self.QlineEdit.setValidator(QIntValidator())
         self.QlineEdit.setObjectName("temperature")
-        self.QlineEdit.setText("")
 
 
 
@@ -38,7 +37,7 @@ class MainWindows(QWidget):
 
         def ok():
 
-            
+
                 if self.QlineEdit.text() > -273 :
                     my_label2.setText(f'Bonjour {self.QlineEdit.text().text()}')
 
