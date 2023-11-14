@@ -1,43 +1,41 @@
+from threading import Thread
+import socket
 
-# -*- coding: latin-1 -*-
+def Send(client):
+    while True:
+        msg = input()
+        msg = msg.encode()
+        client.send(msg)
+def Reception(client):
+    while True:
+        requete_client = client.recv(500)
+        requete_client = requete_client.decode()
+        print(requete_client)
+        if not requete_client : #Si on pert la connexion
+            print("CLOSE")
+            break
 
-import socket # Import socket module
+Host = "0.0.0.0"
+Port = 4090
 
-s = socket.socket()
-nom_hote = socket.gethostname()
-addr_ip_hote = socket.gethostbyname(nom_hote)
+#Creation du socket
+socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
+socket.bind((Host,Port))
+socket.listen(1)
+print("serveur pret ... ")
 
-port = 4090
-s.bind((nom_hote, port))
+#Le script s'arrete jusqu'a une connection
+client, ip = socket.accept()
+print("Le client d'ip",ip,"se connecte")
 
-print("Serveur de test d'envoi de messages")
-print ("->nom du serveur %s"%nom_hote)
-print( "->IP de l'hote : %s"%addr_ip_hote)
-print( "->port :%i"%port)
-print("Serveur démarré, en attente d'une connexion ...")
+envoi = Thread(target=Send,args=[client])
+recep = Thread(target=Reception,args=[client])
 
+envoi.start()
+recep.start()
 
-s.listen(5)
+recep.join()
 
-
-c, addr = s.accept()
-addr_ip_client = addr[0]
-print("Connection recue depuis le client : ",addr_ip_client)
-
-message="Connecté au serveur !"
-c.send(message.encode())
-
-SRVstatus=1
-while SRVstatus==1:
-    msgClient = c.recv(1024)
-    while msgClient!="bye" or msgClient!="arret":
-        s.listen(5)
-        print ("C>", msgClient)
-        msgServeur=msgClient
-        c.send(msgClient)
-        msgClient = c.recv(1024)
-
-    print("fermeture du serveur")
-    SRVstatus=0
-c.close()
+client.close()
+socket.close()
