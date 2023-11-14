@@ -13,11 +13,10 @@ def fichier() :
                     print("vous n'avez pas les permissions néssécaires pour ouvrir le fichier")
                 else:
                     print(l)
-
+                    f.close()
     except FileNotFoundError:
         print("le fichier spécifié n'existe pas")
-    finally:
-        f.close()
+
 
 if __name__ == '__main__':
 

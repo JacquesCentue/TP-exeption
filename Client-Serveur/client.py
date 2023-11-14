@@ -16,7 +16,7 @@ Host = "10.128.3.19"
 Port = 4090
 
 #Creation du socket
-socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+socket = socket.socket(socket.AF_INET)
 socket.connect((Host,Port))
 
 envoi = Thread(target=Send,args=[socket])
