@@ -1,24 +1,26 @@
-# -*- coding: latin-1 -*-
+from threading import Thread
 import socket
 
+def Send(socket):
+    while True:
+        msg = input()
+        msg = msg.encode()
+        socket.send(msg)
+def Reception(socket):
+    while True:
+        requete_server = socket.recv(500)
+        requete_server = requete_server.decode()
+        print(requete_server)
 
-server = socket.socket()
+Host = "10.128.3.19"
+Port = 4090
 
+#Creation du socket
+socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+socket.connect((Host,Port))
 
-port = 4090
-addr_ip = "10.128.6.12"
-server.connect((socket.gethostbyaddr(addr_ip)[0], port))
+envoi = Thread(target=Send,args=[socket])
+recep = Thread(target=Reception,args=[socket])
 
-conn=1
-while conn==1:
-
-    msg=server.recv(1024)
-    print("C>",msg)
-    message=input("Message : ")
-    server.send(message.encode())
-    msgSRV = server.recv(1024)
-    print("S>", msgSRV)
-
-
-conn=0
-server.close()
+envoi.start()
+recep.start()
