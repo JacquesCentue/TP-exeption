@@ -15,7 +15,7 @@ def Reception(client):
             print("CLOSE")
             break
 
-Host = "10.128.3.19"
+Host = "0.0.0.0"
 Port = 4090
 
 #Creation du socket
