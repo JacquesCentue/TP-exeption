@@ -1,6 +1,19 @@
 
 import socket
 
+<<<<<<< Updated upstream
+=======
+def Send(socket):
+    while True:
+        msg = input("message : ")
+        msg = msg.encode()
+        socket.send(msg)
+def Reception(socket):
+    while True:
+        requete_server = socket.recv(1024)
+        requete_server = requete_server.decode()
+        print(requete_server)
+>>>>>>> Stashed changes
 
 server = socket.socket()
 
