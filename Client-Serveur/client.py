@@ -3,12 +3,12 @@ import socket
 
 def Send(socket):
     while True:
-        msg = input()
+        msg = input("message : ")
         msg = msg.encode()
         socket.send(msg)
 def Reception(socket):
     while True:
-        requete_server = socket.recv(500)
+        requete_server = socket.recv(1024)
         requete_server = requete_server.decode()
         print(requete_server)
 

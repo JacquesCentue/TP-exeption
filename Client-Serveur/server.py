@@ -23,6 +23,7 @@ socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
 socket.bind((Host,Port))
 socket.listen(1)
+print("serveur pret ... ")
 
 #Le script s'arrete jusqu'a une connection
 client, ip = socket.accept()
