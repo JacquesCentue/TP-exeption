@@ -7,11 +7,11 @@ client_socket = socket.socket()
 client_socket.connect((host, port))
 
 msg = ""
-while msg != "deco-server":
+while msg != "bye":
     msg = input("Message : ")
-    if msg != "deco-server":
+    if msg != "bye":
         msg = f'{socket.gethostname()}> {msg}'
-    
+
     client_socket.send(msg.encode())
     print(f"Message envoyé : {msg}")
 
