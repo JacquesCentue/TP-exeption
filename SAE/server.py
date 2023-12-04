@@ -2,9 +2,6 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolTip, QMessageBox, QMainWindow, QGridLayout, QLabel, QLineEdit, QComboBox, QTextEdit
 import socket
 import setuptools
-import psutil
-import netaddr
-import netifaces
 import threading
 import os
 import platform
