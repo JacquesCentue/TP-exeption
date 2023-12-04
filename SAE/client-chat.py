@@ -1,7 +1,7 @@
 import socket
 
 host = "localhost" # "", "127.0.0.1
-port = 10000
+port = 4090
 
 client_socket = socket.socket()
 client_socket.connect((host, port))
