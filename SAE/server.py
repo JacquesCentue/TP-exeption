@@ -1,12 +1,10 @@
 
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QToolTip, QMessageBox, QMainWindow, QGridLayout, QLabel, QLineEdit, QComboBox, QTextEdit
 import socket
-import setuptools
 import threading
 import os
 import platform
 import sys
-import shutil
 from PyQt5.QtCore import *
 
 
@@ -84,15 +82,12 @@ class Window(QWidget):
                 self.message_recu = self.connexion.recv(1024).decode('utf-8')
                 if not message:
                     break
-                if self.message_recu == "Jacques> no":
-                    print("clearing")
-                    self.tbxChat.clear()
                 self.tbxChat.append(self.message_recu)
                 self.lblMaxClient.setText("Nombre de clients connectés : {}".format(len(threading.enumerate()) - 2))
                 self.connexion.send(self.message_recu.encode())
                 print(self.message_recu.encode())
                 # Diffusion du message à tous les clients
-                broadcast(message)
+                self.broadcast(message)
             except:
                 # En cas d'erreur, fermer la connexion du client
                 remove_client(client_socket)
