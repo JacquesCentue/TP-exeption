@@ -1,0 +1,87 @@
+import socket
+import threading
+import mysql.connector
+
+class Server:
+    def __init__(self):
+        # Configuration du serveur
+        self.HOST = '127.0.0.1'
+        self.PORT = 55555
+
+        # Connexion à la base de données MySQL
+        self.db_connection = mysql.connector.connect(
+            host='localhost',
+            user='zabchat',
+            password='zabchat',
+            database='zabchat'
+        )
+
+        # Dictionnaire pour stocker les connexions des clients par canal
+        self.channels = {}
+
+        # Création du socket serveur
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.bind((self.HOST, self.PORT))
+        self.server_socket.listen()
+
+        # Créer un thread pour écouter les connexions
+        threading.Thread(target=self.listen_connections).start()
+
+    def listen_connections(self):
+        while True:
+            # Accepter une connexion client
+            client_socket, address = self.server_socket.accept()
+
+            # Créer un thread pour gérer le client
+            threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+
+    def handle_client(self, client_socket):
+        try:
+            # Réception du nom d'utilisateur et du mot de passe du client
+            username = client_socket.recv(1024).decode('utf-8')
+            password = client_socket.recv(1024).decode('utf-8')
+            print(username)
+            print(password)
+
+            # Vérification des informations d'authentification dans la base de données
+            cursor = self.db_connection.cursor()
+            cursor.execute("SELECT user_id, rights FROM user WHERE username=%s AND password=%s", (username, password))
+            user = cursor.fetchone()
+            print(user)
+            cursor.close()
+
+            if user:
+                user_id, access_rights = user
+                # Envoyer l'autorisation au client avec le numéro d'utilisateur et les droits d'accès
+                client_socket.send(f"AUTHORIZED,{user_id},{access_rights}".encode('utf-8'))
+
+                # Stocker le numéro d'utilisateur et les droits d'accès
+                self.channels[user_id] = client_socket, access_rights
+
+                # Attendre les messages du client
+                while True:
+                    message = client_socket.recv(1024).decode('utf-8')
+                    if not message:
+                        break
+
+                    # Gérer les messages en fonction du canal et des droits d'accès
+                    self.handle_message(user_id, access_rights, message)
+
+            else:
+                # Envoi d'une autorisation refusée au client
+                client_socket.send("UNAUTHORIZED".encode('utf-8'))
+
+                # Fermer la connexion du client
+                client_socket.close()
+
+        except Exception as e:
+            print(f"Erreur lors du traitement du client : {e}")
+
+    def handle_message(self, user_id, access_rights, message):
+        # Gérer le message en fonction du canal et des droits d'accès
+        # Ici, vous pouvez mettre en œuvre la logique de gestion des messages en fonction des canaux et des droits d'accès
+        # Pour cet exemple, nous affichons simplement le message côté serveur
+        print(f"Canal {access_rights}, Utilisateur {user_id}: {message}")
+
+if __name__ == '__main__':
+    server = Server()
