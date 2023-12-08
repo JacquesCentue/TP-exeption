@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QTe
     QDialog, QMessageBox
 import socket
 import threading
-
+import cryptocode
 
 class AuthWindow(QDialog):
     def __init__(self):
@@ -53,6 +53,8 @@ class AuthWindow(QDialog):
             # Envoyer le nom d'utilisateur et le mot de passe au serveur pour l'authentification
             username = self.input_username.text()
             password = self.input_password.text()
+            #password= cryptocode.encrypt(password, "zabchat")
+            print(password)
 
             # Envoyer le nom d'utilisateur et le mot de passe au serveur
             self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -67,7 +69,8 @@ class AuthWindow(QDialog):
             response = self.client_socket.recv(1024).decode('utf-8')
             if response.startswith("AUTHORIZED"):
                 # Analyser la réponse pour obtenir le numéro d'utilisateur et les droits d'accès, séparé par une virgule
-                _, utilisateur, droits = response.split(',')
+                _,userid, utilisateur, droits = response.split(',')
+                self.userid = userid
                 self.utilisateur = utilisateur
                 self.channel = int(droits)
 
@@ -75,19 +78,18 @@ class AuthWindow(QDialog):
                 self.accept()
             else:
                 # Afficher un message d'erreur en cas d'authentification échouée
-                QMessageBox.critical(self, 'Erreur d\'authentification',
-                                     'Accès refusé. Veuillez vérifier vos informations.')
+                QMessageBox.critical(self, 'Erreur d\'authentification','Accès refusé. Veuillez vérifier vos informations.')
                 self.client_socket.close()
 
         except Exception as e:
             print(f"Erreur lors de l'authentification: {e}")
 
     def get_credentials(self):
-        return self.utilisateur, self.channel
+        return self.userid, self.utilisateur, self.channel
 
 
 class ChatWindow(QMainWindow):
-    def __init__(self, utilisateur, channel, password):
+    def __init__(self,userid, utilisateur, channel, password):
         super().__init__()
 
         self.initUI()
@@ -95,6 +97,7 @@ class ChatWindow(QMainWindow):
         # Configuration du client
         self.HOST = '127.0.0.1'
         self.PORT = 55555
+        self.userid=userid
         self.utilisateur = utilisateur
         self.channel = channel
         self.password = password
@@ -112,13 +115,16 @@ class ChatWindow(QMainWindow):
 
     def initUI(self):
         self.setGeometry(100, 100, 800, 600)
-        self.setWindowTitle('Chat Multi-canaux')
+        self.setWindowTitle('Zabchat')
 
         self.lblChat = QLabel("chat")
         self.text_edit = QTextEdit(self)
         self.text_edit.setReadOnly(True)
 
         self.input_line = QLineEdit(self)
+        # Envoi du message si l'utilisateur appuie sur la touche entrer
+        self.input_line.returnPressed.connect(self.send_message)
+
         self.send_button = QPushButton('Envoyer', self)
         self.send_button.clicked.connect(self.send_message)
 
@@ -139,26 +145,40 @@ class ChatWindow(QMainWindow):
                 message = self.client_socket.recv(1024).decode('utf-8')
 
                 self.text_edit.append(message)
-            except:
+            except Exception as e:
                 # En cas d'erreur, fermer la connexion du client
-                print("Erreur lors de la réception du message.")
+                print(f"Erreur lors de la réception du message. {e}")
                 self.client_socket.close()
                 break
 
     def send_message(self):
         # Envoi du message au serveur
-        message = (f"{self.utilisateur}> {self.input_line.text()}")
+        message = self.input_line.text().strip()
+        # verification du contenu du message (si il n'est pas vide)
+        if message != "":
+            if message !="bye":
+                message = (f"{self.utilisateur}> {self.input_line.text()}")
 
-        self.client_socket.send(message.encode('utf-8'))
-        self.text_edit.append(f"vous> {message}")
-        self.input_line.clear()
+                self.client_socket.send(message.encode('utf-8'))
+                #self.text_edit.append(f"vous> {message}")
+
+
+                self.input_line.clear()
+            else:
+                message = ("bye")
+
+                self.client_socket.send(message.encode('utf-8'))
+                time.sleep(0.5)
+                self.client_socket.close()
+                app.quit()
+
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     auth_window = AuthWindow()
     if auth_window.exec() == QDialog.Accepted:
-        utilisateur, channel = auth_window.get_credentials()
-        client_window = ChatWindow(utilisateur, channel, auth_window.input_password.text())
+        userid, utilisateur, channel = auth_window.get_credentials()
+        client_window = ChatWindow(userid,utilisateur, channel, auth_window.input_password.text())
         client_window.show()
         sys.exit(app.exec_())

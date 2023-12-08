@@ -63,13 +63,14 @@ class ServerWindow(QMainWindow):
                 # Envoi du message à chaque client sauf l'expéditeur
 
                     client[0].send(message.encode('utf-8'))
-            except:z
+            except:
                 # En cas d'erreur, fermer la connexion du client
                 self.remove_client(client[0])
 
     def remove_client(self, client_socket):
         # Retirer un client de la liste
         for client in self.clients:
+            #si le client correspont au socket de la liste client, on ferme son socket
             if client[0] == client_socket:
                 self.clients.remove(client)
                 break

@@ -1,11 +1,12 @@
 import socket
 import threading
 import mysql.connector
+import cryptocode
 
 class Server:
     def __init__(self):
         # Configuration du serveur
-        self.HOST = '127.0.0.1'
+        self.HOST = '0.0.0.0'
         self.PORT = 55555
 
         # Connexion à la base de données MySQL
@@ -41,32 +42,57 @@ class Server:
             # Réception du nom d'utilisateur et du mot de passe du client
             username = client_socket.recv(1024).decode('utf-8')
             password = client_socket.recv(1024).decode('utf-8')
-            print(username)
-            print(password)
 
+            #test de passage des identifiants
+            print(username)
+            print(f"mot de passe hashé: {password}") # normalement crypté avec pour clé "zabchat" bien sur la clé peut etre autre chose mais identique coté client et serveur
+            #password = cryptocode.decrypt(password, "zabchat")
+            #print(f"mot de passe décrypté: {password}")
             # Vérification des informations d'authentification dans la base de données
             cursor = self.db_connection.cursor()
-            cursor.execute("SELECT username, rights FROM user WHERE username=%s AND password=%s", (username, password))
+            cursor.execute("SELECT user_id,username, rights FROM user WHERE username=%s AND password=%s", (username, password))
             user = cursor.fetchone()
-            print(user)
+            #print(user)
             cursor.close()
 
             if user:
-                username, access_rights = user
+                userid, username, access_rights = user
                 # Envoyer l'autorisation au client avec le numéro d'utilisateur et les droits d'accès
-                client_socket.send(f"AUTHORIZED,{username},{access_rights}".encode('utf-8'))
-                print(self.clients)
+                client_socket.send(f"AUTHORIZED,{userid},{username},{access_rights}".encode('utf-8'))
+                self.broadcast(f"{username} s'est connecté", "0.0.0.0")
+
+
 
                 # Attendre les messages du client
                 while True:
+
+
+                    print(f"userid:{userid}")
                     try:
                         message = client_socket.recv(1024).decode('utf-8')
+                        print(message)
+                        if message =="bye":
+                            self.broadcast(f"{username} s'est déconnecté", "0.0.0.0")
+
+                            self.remove_client(client_socket)
+
+
                         if not message:
                             break
+
                         # Diffusion du message à tous les clients
                         self.broadcast(message, client_address)
-                    except:
+
+                        # Ecriture du message dans le base de donnée pour modération
+                        cursor = self.db_connection.cursor()
+                        cursor.execute("INSERT INTO generalchat(idsent,message) VALUES (%s,%s)",(userid,message))
+                        user = cursor.fetchone()
+                        self.db_connection.commit()
+                        cursor.close()
+
+                    except Exception as e:
                         # En cas d'erreur, fermer la connexion du client
+                        print(e)
                         self.remove_client(client_socket)
                         break
 
@@ -85,7 +111,7 @@ class Server:
         for client in self.clients:
             try:
                 # Envoi du message à chaque client sauf l'expéditeur
-                if client[1] != sender_address:
+                #if client[1] != sender_address:
                     client[0].send(message.encode('utf-8'))
             except:
                 # En cas d'erreur, fermer la connexion du client
@@ -93,9 +119,13 @@ class Server:
 
     def remove_client(self, client_socket):
         # Retirer un client de la liste
+
         for client in self.clients:
+            # si le client correspont au socket de la liste client, on ferme son socket
             if client[0] == client_socket:
+
                 self.clients.remove(client)
+
                 break
 
 if __name__ == '__main__':
