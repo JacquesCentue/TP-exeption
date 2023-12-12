@@ -14,7 +14,7 @@ class AuthWindow(QDialog):
         self.initUI()
 
         # Configuration du client
-        self.HOST = '127.0.0.1'
+        self.HOST = '192.168.1.145'
         self.PORT = 55555
         self.utilisateur = None
         self.channel = None
@@ -76,6 +76,9 @@ class AuthWindow(QDialog):
 
                 # Fermer la fenêtre d'authentification et afficher la fenêtre principale
                 self.accept()
+            elif response.startswith("BANNED"):
+                QMessageBox.critical(self, 'Erreur d\'authentification', 'Accès refusé. Vous avez été banni veuillez contacter un administrateur')
+                self.client_socket.close()
             else:
                 # Afficher un message d'erreur en cas d'authentification échouée
                 QMessageBox.critical(self, 'Erreur d\'authentification','Accès refusé. Veuillez vérifier vos informations.')
@@ -95,7 +98,7 @@ class ChatWindow(QMainWindow):
         self.initUI()
 
         # Configuration du client
-        self.HOST = '127.0.0.1'
+        self.HOST = '192.168.1.145'
         self.PORT = 55555
         self.userid=userid
         self.utilisateur = utilisateur
@@ -109,7 +112,7 @@ class ChatWindow(QMainWindow):
         # Envoyer le numéro d'utilisateur et les droits d'accès au serveur une deuxième fois
         self.client_socket.send(str(self.utilisateur).encode('utf-8'))
         self.client_socket.send(str(self.password).encode('utf-8'))
-
+        time.sleep(1)
         # Créer un thread pour gérer la réception des messages, l'envoi se situe dans le thread principal
         threading.Thread(target=self.receive_messages).start()
 
