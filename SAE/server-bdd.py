@@ -1,6 +1,8 @@
 import socket
 import threading
 import mysql.connector
+import time
+import sys,os
 import cryptocode
 
 
@@ -31,6 +33,7 @@ class Server:
 
         # Créer un thread pour écouter les connexions
         threading.Thread(target=self.listen_connections).start()
+        threading.Thread(target=self.commande()).start()
 
     def listen_connections(self):
         while True:
@@ -46,29 +49,18 @@ class Server:
     def handle_client(self, client_socket, client_address):
         try:
             #on raffraichit la liste des utilisateurs et des ip bannies lorsqu'un autre utilisateur se connecte
-            self.ipban =[]
-            self.userban =[]
-
-            # Reception des paramètres des utilisateurs et ip bannies
-            # creation de la liste des ip bannies
-            cursor = self.db_connection.cursor(buffered=True)
-            cursor.execute("SELECT ipban FROM ban GROUP BY ipban")
-            self.ipban = [ip[0] for ip in cursor.fetchall()]
-            print(f"adresses IP bannies : {self.ipban}")
-            print(f"{self.ipban[0]}")
-            for i in range(len(self.ipban)):
-                print(f"ip bannie {i} : {self.ipban[i]}")
-            cursor.close()
+            self.ban =[]
 
             # creation de la liste des utilisateurs bannis
             cursor = self.db_connection.cursor(buffered=True)
-            cursor.execute("SELECT userban FROM ban")
+            cursor.execute("SELECT ban FROM ban")
             # Cela permet le formatage de la liste a partir des identifiants, on enleve les parentheses
-            self.userban = [user[0] for user in cursor.fetchall()]
-            print(f"utilisateurs bannis : {self.userban}")
-            for i in range(len(self.userban)):
-                print(f"utilisateur banni {i} : {self.userban[i]}")
-            print(self.userban)
+            self.ban = [user[0] for user in cursor.fetchall()]
+
+            #print(f"utilisateurs bannis : {self.ban}")
+            #for i in range(len(self.ban)):
+            #    print(f"utilisateur banni {i} : {self.ban[i]}")
+            #print(self.ban)
             cursor.close()
 
 
@@ -88,29 +80,23 @@ class Server:
             cursor.close()
 
 
-
-            for i in range(len(self.userban)):
-                if username != self.userban[i]:
+            i=0
+            for i in range(len(self.ban)):
+                if username != self.ban[i] and client_address[0]!=self.ban[i]:
                     continu=1
                 else:
                     client_socket.send("BANNED".encode('utf-8'))
-
+                    print(f"une utilisateur banni a tenté une connexion : {self.ban[i]}")
                     # Fermer la connexion du client
+                    username = ""
                     client_socket.close()
 
-            for i in range(len(self.ipban)):
-                if client_address[0] != self.ipban[i] :
-                    continu=1
-                else:
-                    client_socket.send("BANNED".encode('utf-8'))
 
-                    # Fermer la connexion du client
-                    client_socket.close()
 
             if user:
                 userid, username, access_rights = user
                 # Envoyer l'autorisation au client avec le numéro d'utilisateur et les droits d'accès
-                print(f"AUTHORIZED,{userid},{username},{access_rights}")
+                #print(f"AUTHORIZED,{userid},{username},{access_rights}")
                 client_socket.send(f"AUTHORIZED,{userid},{username},{access_rights}".encode('utf-8'))
                 self.broadcast(f"{username} s'est connecté", "0.0.0.0")
 
@@ -120,7 +106,7 @@ class Server:
                 while True:
 
 
-                    print(f"userid:{userid}")
+                    #print(f"userid:{userid}")
                     try:
                         message = client_socket.recv(1024).decode('utf-8')
                         print(message)
@@ -184,6 +170,75 @@ class Server:
                 self.clients.remove(client)
 
                 break
+
+    def restart_server(self):
+        print("Redémarrage du serveur...")
+        self.broadcast("le serveur va redémare dans 10 secondes ","0.0.0.0")
+        time.sleep(10)
+
+        # Fermer tous les sockets clients
+        for client, _ in self.clients:
+            client.close()
+
+        # Fermer le socket serveur
+        self.server_socket.close()
+
+        # Redémarrer le script du serveur
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+    def commande(self):
+        serverStatus = 1
+        while serverStatus==1:
+            commandPrompt = input("root : ")
+            if commandPrompt.startswith("/shutdown"):
+                self.broadcast("vous allez etre déconnecté dans 1 minute (le serveur va redémarer)", "0.0.0.0")
+                time.sleep(10)
+                for client_socket, _ in self.clients:
+                    try:
+                        client_socket.shutdown(socket.SHUT_RDWR)
+                        client_socket.close()
+                    except Exception as e:
+                        print(f"Erreur lors du shutdown : {e}")
+
+
+                # Fermer le socket serveur
+                self.server_socket.shutdown(socket.SHUT_RDWR)
+                self.server_socket.close()
+                serverStatus =0
+            elif commandPrompt.startswith("/ban"):
+                username = commandPrompt.split()[1]
+
+                try:
+                    arg2 = commandPrompt.split()[2]  # Prend le deuxième argument
+
+                    # Ajoute l'utilisateur à la liste des bannis avec le deuxième argument
+                    cursor = self.db_connection.cursor()
+                    cursor.execute("INSERT INTO ban(ban) VALUES (%s)", (username,))
+                    cursor.execute("INSERT INTO ban(ban) VALUES (%s)", (arg2,))
+                    self.db_connection.commit()
+                    cursor.close()
+                    for client in self.clients:
+                        if client[1][0] == arg2:  # Comparaison avec l'adresse IP
+                            # Si l'adresse IP est connectée, déconnecte le client
+                            client[0].send("bye".encode('utf-8'))
+                            self.remove_client(client[0])
+                            print(f"Déconnexion de l'utilisateur avec l'adresse IP {arg2}")
+                except IndexError:
+                    # Si aucun deuxième argument n'est fourni
+                    cursor = self.db_connection.cursor()
+                    cursor.execute("INSERT INTO ban(ban) VALUES (%s)", (username,))
+                    self.db_connection.commit()
+                    cursor.close()
+                    print(f"Banning user {username}")
+                except Exception as e:
+                    print(f"Erreur lors du bannissement : {e}")
+                self.restart_server()
+
+            elif commandPrompt.startswith("/send"):
+                message=commandPrompt.split()
+                message = "serveur > "+' '.join(message[1:])
+                self.broadcast(message,"0.0.0.0")
+
 
 if __name__ == '__main__':
     server = Server()
