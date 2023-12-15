@@ -2,7 +2,7 @@ import sys
 import time
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QTextEdit, QLineEdit, QPushButton, QLabel, \
-    QDialog, QMessageBox
+    QDialog, QMessageBox,QComboBox
 import socket
 import threading
 import cryptocode
@@ -14,10 +14,10 @@ class AuthWindow(QDialog):
         self.initUI()
 
         # Configuration du client
-        self.HOST = '192.168.1.145'
+        self.HOST = '127.0.0.1'
         self.PORT = 55555
         self.utilisateur = None
-        self.channel = None
+        self.droits = None
 
         # Afficher la fenêtre d'authentification au lancement de l'application
         self.show_auth_window()
@@ -72,7 +72,7 @@ class AuthWindow(QDialog):
                 _,userid, utilisateur, droits = response.split(',')
                 self.userid = userid
                 self.utilisateur = utilisateur
-                self.channel = int(droits)
+                self.droits = int(droits)
 
                 # Fermer la fenêtre d'authentification et afficher la fenêtre principale
                 self.accept()
@@ -88,22 +88,23 @@ class AuthWindow(QDialog):
             print(f"Erreur lors de l'authentification: {e}")
 
     def get_credentials(self):
-        return self.userid, self.utilisateur, self.channel
+        return self.userid, self.utilisateur, self.droits
 
 
 class ChatWindow(QMainWindow):
-    def __init__(self,userid, utilisateur, channel, password):
+    def __init__(self,userid, utilisateur, droits, password):
         super().__init__()
 
         self.initUI()
 
         # Configuration du client
-        self.HOST = '192.168.1.145'
+        self.HOST = '127.0.0.1'
         self.PORT = 55555
         self.userid=userid
         self.utilisateur = utilisateur
-        self.channel = channel
+        self.droits = droits
         self.password = password
+        print(droits)
 
         # Connexion au serveur
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -120,9 +121,39 @@ class ChatWindow(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle('Zabchat')
 
-        self.lblChat = QLabel("chat")
-        self.text_edit = QTextEdit(self)
-        self.text_edit.setReadOnly(True)
+        self.lblChat = QLabel("General")
+        self.tbxGeneralChat = QTextEdit(self)
+        self.tbxGeneralChat.setReadOnly(True)
+        self.tbxGeneralChat.setStyleSheet("background-color: rgb(255, 250, 205);")
+        self.tbxGeneralChat.setStyleSheet("color: black;")
+        self.tbxGeneralChat.show()
+
+        self.tbxBlablaChat = QTextEdit(self)
+        self.tbxBlablaChat.setReadOnly(True)
+        self.tbxBlablaChat.setStyleSheet("background-color: rgb(255, 250, 205);")
+        self.tbxBlablaChat.setStyleSheet("color: blue;")
+        self.tbxBlablaChat.hide()
+
+        self.tbxInformatiqueChat = QTextEdit(self)
+        self.tbxInformatiqueChat.setReadOnly(True)
+        self.tbxInformatiqueChat.setStyleSheet("background-color: rgb(255, 250, 205);")
+        self.tbxInformatiqueChat.setStyleSheet("color: green;")
+        self.tbxInformatiqueChat.hide()
+
+        self.tbxMarketingChat = QTextEdit(self)
+        self.tbxMarketingChat.setReadOnly(True)
+        self.tbxMarketingChat.setStyleSheet("background-color: rgb(255, 250, 205);")
+        self.tbxMarketingChat.setStyleSheet("color: pink;")
+        self.tbxMarketingChat.hide()
+
+        self.tbxComptabiliteChat = QTextEdit(self)
+        self.tbxComptabiliteChat.setReadOnly(True)
+        self.tbxComptabiliteChat.setStyleSheet("background-color: rgb(255, 250, 205);")
+        self.tbxComptabiliteChat.setStyleSheet("color: yellow;")
+        self.tbxComptabiliteChat.hide()
+
+
+
 
         self.input_line = QLineEdit(self)
         # Envoi du message si l'utilisateur appuie sur la touche entrer
@@ -131,23 +162,107 @@ class ChatWindow(QMainWindow):
         self.send_button = QPushButton('Envoyer', self)
         self.send_button.clicked.connect(self.send_message)
 
+        #definission de la combobox des diférents cannaux
+        self.cbxCannaux = QComboBox(self)
+        self.cbxCannaux.addItem("General")
+        self.cbxCannaux.addItem("Blabla")
+        self.cbxCannaux.addItem("Informatique")
+        self.cbxCannaux.addItem("Marketing")
+        self.cbxCannaux.addItem("Comptabilite")
+        self.cbxCannaux.currentTextChanged.connect(self.selectChat)
+
+        #affichage des widgets
         layout = QVBoxLayout()
         layout.addWidget(self.lblChat)
-        layout.addWidget(self.text_edit)
+        layout.addWidget(self.cbxCannaux)
+        layout.addWidget(self.tbxGeneralChat)
+        layout.addWidget(self.tbxBlablaChat)
+        layout.addWidget(self.tbxInformatiqueChat)
+        layout.addWidget(self.tbxMarketingChat)
+        layout.addWidget(self.tbxComptabiliteChat)
         layout.addWidget(self.input_line)
         layout.addWidget(self.send_button)
+
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+    def selectChat(self, value,):
+        print("combobox changed", value)
+        self.lblChat.setText(value)
+        if self.lblChat.text() == "General":
+            self.tbxGeneralChat.show()
+            self.tbxBlablaChat.hide()
+            self.tbxInformatiqueChat.hide()
+            self.tbxMarketingChat.hide()
+            self.tbxMarketingChat.hide()
+            self.tbxComptabiliteChat.hide()
+
+        elif self.lblChat.text() == "Blabla":
+            self.tbxGeneralChat.hide()
+            self.tbxBlablaChat.show()
+            self.tbxInformatiqueChat.hide()
+            self.tbxMarketingChat.hide()
+            self.tbxMarketingChat.hide()
+            self.tbxComptabiliteChat.hide()
+
+        elif self.lblChat.text() == "Informatique":
+            self.tbxGeneralChat.hide()
+            self.tbxBlablaChat.hide()
+            self.tbxInformatiqueChat.show()
+            self.tbxMarketingChat.hide()
+            self.tbxMarketingChat.hide()
+            self.tbxComptabiliteChat.hide()
+
+        elif self.lblChat.text() == "Marketing":
+            self.tbxGeneralChat.hide()
+            self.tbxBlablaChat.hide()
+            self.tbxInformatiqueChat.hide()
+            self.tbxMarketingChat.hide()
+            self.tbxMarketingChat.show()
+            self.tbxComptabiliteChat.hide()
+
+        elif self.lblChat.text() == "Comptabilite":
+            self.tbxGeneralChat.hide()
+            self.tbxBlablaChat.hide()
+            self.tbxInformatiqueChat.hide()
+            self.tbxMarketingChat.hide()
+            self.tbxMarketingChat.hide()
+            self.tbxComptabiliteChat.show()
+
+
     def receive_messages(self):
         while True:
             try:
+                print(self.droits)
                 # Réception du message du serveur
                 message = self.client_socket.recv(1024).decode('utf-8')
 
-                self.text_edit.append(message)
+                if message.startswith("/Blabla"):
+                    messagetransmi = message.split()
+                    messagetransmi = ' '.join(messagetransmi[1:])
+                    self.tbxBlablaChat.append(messagetransmi)
+                elif message.startswith("/Informatique") and self.droits<=5:
+                    messagetransmi = message.split()
+                    messagetransmi = ' '.join(messagetransmi[1:])
+                    self.tbxInformatiqueChat.append(messagetransmi)
+                elif message.startswith("/Marketing") and (self.droits ==3 or self.droits==4 or self.droits==7 or self.droits==8):
+                    messagetransmi = message.split()
+                    messagetransmi = ' '.join(messagetransmi[1:])
+                    self.tbxMarketingChat.append(messagetransmi)
+                elif message.startswith("/Comptabilite") and self.droits== 2 or self.droits==4 or self.droits==6 or self.droits==8:
+                    messagetransmi = message.split()
+                    messagetransmi = ' '.join(messagetransmi[1:])
+                    self.tbxComptabiliteChat.append(messagetransmi)
+                elif message.startswith("/General"):
+                    messagetransmi = message.split()
+                    messagetransmi = ' '.join(messagetransmi[1:])
+                    self.tbxGeneralChat.append(messagetransmi)
+                else:
+                    self.tbxGeneralChat.append(message)
+
+
             except Exception as e:
                 # En cas d'erreur, fermer la connexion du client
                 print(f"Erreur lors de la réception du message. {e}")
@@ -160,10 +275,12 @@ class ChatWindow(QMainWindow):
         # verification du contenu du message (si il n'est pas vide)
         if message != "":
             if message !="bye":
-                message = (f"{self.utilisateur}> {self.input_line.text()}")
 
+                print(self.lblChat.text())
+                message = (f"/{self.lblChat.text()} {self.utilisateur}> {self.input_line.text()}")
+                print(message)
                 self.client_socket.send(message.encode('utf-8'))
-                #self.text_edit.append(f"vous> {message}")
+                #self.tbxGeneralChat.append(f"vous> {message}")
 
 
                 self.input_line.clear()
@@ -181,7 +298,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     auth_window = AuthWindow()
     if auth_window.exec() == QDialog.Accepted:
-        userid, utilisateur, channel = auth_window.get_credentials()
-        client_window = ChatWindow(userid,utilisateur, channel, auth_window.input_password.text())
+        userid, utilisateur, droits = auth_window.get_credentials()
+        client_window = ChatWindow(userid,utilisateur, droits, auth_window.input_password.text())
         client_window.show()
         sys.exit(app.exec_())
