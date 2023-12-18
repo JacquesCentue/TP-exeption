@@ -95,7 +95,7 @@ class ChatWindow(QMainWindow):
     def __init__(self,userid, utilisateur, droits, password):
         super().__init__()
 
-        self.initUI()
+
 
         # Configuration du client
         self.HOST = '127.0.0.1'
@@ -104,7 +104,7 @@ class ChatWindow(QMainWindow):
         self.utilisateur = utilisateur
         self.droits = droits
         self.password = password
-        print(droits)
+        self.initUI()
 
         # Connexion au serveur
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -122,11 +122,7 @@ class ChatWindow(QMainWindow):
         self.setWindowTitle('Zabchat')
 
         self.lblChat = QLabel("General")
-        self.tbxGeneralChat = QTextEdit(self)
-        self.tbxGeneralChat.setReadOnly(True)
-        self.tbxGeneralChat.setStyleSheet("background-color: rgb(255, 250, 205);")
-        self.tbxGeneralChat.setStyleSheet("color: black;")
-        self.tbxGeneralChat.show()
+
 
         self.tbxBlablaChat = QTextEdit(self)
         self.tbxBlablaChat.setReadOnly(True)
@@ -149,11 +145,14 @@ class ChatWindow(QMainWindow):
         self.tbxComptabiliteChat = QTextEdit(self)
         self.tbxComptabiliteChat.setReadOnly(True)
         self.tbxComptabiliteChat.setStyleSheet("background-color: rgb(255, 250, 205);")
-        self.tbxComptabiliteChat.setStyleSheet("color: yellow;")
+        self.tbxComptabiliteChat.setStyleSheet("color: orange;")
         self.tbxComptabiliteChat.hide()
 
-
-
+        self.tbxGeneralChat = QTextEdit(self)
+        self.tbxGeneralChat.setReadOnly(True)
+        self.tbxGeneralChat.setStyleSheet("background-color: rgb(255, 250, 205);")
+        self.tbxGeneralChat.setStyleSheet("color: black;")
+        self.tbxGeneralChat.show()
 
         self.input_line = QLineEdit(self)
         # Envoi du message si l'utilisateur appuie sur la touche entrer
@@ -166,9 +165,13 @@ class ChatWindow(QMainWindow):
         self.cbxCannaux = QComboBox(self)
         self.cbxCannaux.addItem("General")
         self.cbxCannaux.addItem("Blabla")
-        self.cbxCannaux.addItem("Informatique")
-        self.cbxCannaux.addItem("Marketing")
-        self.cbxCannaux.addItem("Comptabilite")
+        if self.droits >= 5:
+            self.cbxCannaux.addItem("Informatique")
+        if self.droits ==3 or self.droits==4 or self.droits==7 or self.droits==8 :
+            self.cbxCannaux.addItem("Marketing")
+        if self.droits == 2 or self.droits == 4 or self.droits == 6 or self.droits == 8:
+            self.cbxCannaux.addItem("Comptabilite")
+
         self.cbxCannaux.currentTextChanged.connect(self.selectChat)
 
         #affichage des widgets
@@ -224,12 +227,22 @@ class ChatWindow(QMainWindow):
             self.tbxComptabiliteChat.hide()
 
         elif self.lblChat.text() == "Comptabilite":
-            self.tbxGeneralChat.hide()
-            self.tbxBlablaChat.hide()
-            self.tbxInformatiqueChat.hide()
-            self.tbxMarketingChat.hide()
-            self.tbxMarketingChat.hide()
-            self.tbxComptabiliteChat.show()
+            try:
+                if self.droits== 2 or self.droits==4 or self.droits==6 or self.droits==8:
+                    self.tbxGeneralChat.hide()
+                    self.tbxBlablaChat.hide()
+                    self.tbxInformatiqueChat.hide()
+                    self.tbxMarketingChat.hide()
+                    self.tbxMarketingChat.hide()
+                    self.tbxComptabiliteChat.show()
+                else:
+                    raise Exception("Désolé, vous n'avez pas les droits")
+            except Exception as e:
+                QMessageBox.critical(self, 'Erreur lors du changement de cannux',
+                                     'Accès refusé. Vous n\'avez pas les droits de consulter ce canal.')
+                self.cbxCannaux.removeItem("Comptabilite")
+
+
 
 
     def receive_messages(self):
@@ -243,7 +256,7 @@ class ChatWindow(QMainWindow):
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
                     self.tbxBlablaChat.append(messagetransmi)
-                elif message.startswith("/Informatique") and self.droits<=5:
+                elif message.startswith("/Informatique") and self.droits <= 5:
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
                     self.tbxInformatiqueChat.append(messagetransmi)
@@ -262,6 +275,8 @@ class ChatWindow(QMainWindow):
                 else:
                     self.tbxGeneralChat.append(message)
 
+                print(message)
+                print(messagetransmi)
 
             except Exception as e:
                 # En cas d'erreur, fermer la connexion du client

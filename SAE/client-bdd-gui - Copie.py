@@ -95,7 +95,7 @@ class ChatWindow(QMainWindow):
     def __init__(self,userid, utilisateur, droits, password):
         super().__init__()
 
-        self.initUI()
+
 
         # Configuration du client
         self.HOST = '127.0.0.1'
@@ -104,7 +104,7 @@ class ChatWindow(QMainWindow):
         self.utilisateur = utilisateur
         self.droits = droits
         self.password = password
-        print(droits)
+        self.initUI()
 
         # Connexion au serveur
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -126,7 +126,7 @@ class ChatWindow(QMainWindow):
         self.tbxGeneralChat.setReadOnly(True)
         self.tbxGeneralChat.setStyleSheet("background-color: rgb(255, 250, 205);")
         self.tbxGeneralChat.setStyleSheet("color: black;")
-        self.tbxGeneralChat.show()
+        self.tbxGeneralChat.hide()
 
         self.tbxBlablaChat = QTextEdit(self)
         self.tbxBlablaChat.setReadOnly(True)
@@ -164,14 +164,19 @@ class ChatWindow(QMainWindow):
 
         #definission de la combobox des diférents cannaux
         self.cbxCannaux = QComboBox(self)
+
+        self.selectChat("General")
         self.cbxCannaux.addItem("General")
+        self.selectChat(self.lblChat.text())
         self.cbxCannaux.addItem("Blabla")
-        #if self.droits >= 5:
-        self.cbxCannaux.addItem("Informatique")
+        if self.droits >= 5:
+            self.cbxCannaux.addItem("Informatique")
         if self.droits ==3 or self.droits==4 or self.droits==7 or self.droits==8 :
             self.cbxCannaux.addItem("Marketing")
-        #if self.droits == 2 or self.droits == 4 or self.droits == 6 or self.droits == 8:
-        self.cbxCannaux.addItem("Comptabilite")
+        if self.droits == 2 or self.droits == 4 or self.droits == 6 or self.droits == 8:
+            self.cbxCannaux.addItem("Comptabilite")
+
+
 
         self.cbxCannaux.currentTextChanged.connect(self.selectChat)
 
@@ -273,6 +278,8 @@ class ChatWindow(QMainWindow):
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
                     self.tbxGeneralChat.append(messagetransmi)
+                elif message.startswith("AUTHORIZED"):
+                    self.tbxGeneralChat.append(message)
                 else:
                     self.tbxGeneralChat.append(message)
 

@@ -112,8 +112,9 @@ class Server:
                 userid, username, access_rights = user
                 # Envoyer l'autorisation au client avec le numéro d'utilisateur et les droits d'accès
                 #print(f"AUTHORIZED,{userid},{username},{access_rights}")
-                client_socket.send(f"AUTHORIZED,{userid},{username},{access_rights}".encode('utf-8'))
-                self.broadcast(f"/General {username} s'est connecté", "0.0.0.0")
+                client_socket.send(f"AUTHORIZED,{userid},{username},{access_rights}\n".encode('utf-8'))
+                time.sleep(0.5)
+                self.broadcast(f"/General {username} s'est connecté\n", "0.0.0.0")
 
 
 
@@ -127,7 +128,7 @@ class Server:
 
                         #print(message) # debug afin de voir si le message arrive jusque la
                         if message =="bye":
-                            self.broadcast(f"/General {username} s'est déconnecté", "0.0.0.0")
+                            self.broadcast(f"{username} s'est déconnecté", "0.0.0.0")
 
                             self.remove_client(client_socket)
 
