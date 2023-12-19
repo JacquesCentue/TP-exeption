@@ -9,6 +9,9 @@ import datetime
 
 class Server:
     def __init__(self):
+        '''
+        constructeur de la classe serveur, permet d'initialiser toutes les variables
+        '''
         # Configuration du serveur
         self.HOST = '0.0.0.0'
         self.PORT = 55555
@@ -20,6 +23,8 @@ class Server:
             password='zabchat',
             database='zabchat'
         )
+
+        #liste de tout les clients connectés
         self.clients = []
 
         # Création du socket serveur
@@ -27,6 +32,7 @@ class Server:
         self.server_socket.bind((self.HOST, self.PORT))
         self.server_socket.listen()
 
+        # liste des utilisateur/IP bannis
         self.ban = []
 
 
@@ -40,8 +46,8 @@ class Server:
 
     def listen_connections(self):
         """
-        fonction permettant d'ecouter en continu grace au thread si un client souhaite se connecter.
-        :return:
+        fonction permettant d'ecouter les nouvelles connections en continu grâce au thread si un client souhaite se connecter.
+        :return: void
         """
         while self.serverstatus==1:
             # Accepter une connexion client
@@ -56,13 +62,13 @@ class Server:
     def handle_client(self, client_socket, client_address):
         '''
         fonction petmettant au serveur d'authentifier le client et de recevoir les message des clients afin de les diffuser a tout le monde
+        et ecriture du message dans la base de donnée dans la table correspondante au canal
 
         :param client_socket: objet de type socket ayant tout les parametres du socket du client tel que son addresse, son port,...
         :param client_address: liste contenant l'adresse ip et le port utilisé pour la communication
-        :return:
+        :return: void
         '''
-        #print(f"client_socket {client_socket}")
-        #print(f"client_address {client_address}")
+
         try:
             #on raffraichit la liste des utilisateurs et des ip bannies lorsqu'un autre utilisateur se connecte
             self.ban =[]
@@ -73,6 +79,7 @@ class Server:
             # Cela permet le formatage de la liste a partir des identifiants, on enleve les parentheses
             self.ban = [user[0] for user in cursor.fetchall()]
 
+            #test pour voir la liste des utilisateurs /ip bannis
             """print(f"utilisateurs bannis : {self.ban}")
             for i in range(len(self.ban)):
                 print(f"utilisateur banni {i} : {self.ban[i]}")
@@ -100,7 +107,7 @@ class Server:
 
                 else:
                     client_socket.send("BANNED".encode('utf-8'))
-                    print(f"une utilisateur banni a tenté une connexion : {self.ban[i]}")
+                    print(f"un utilisateur banni a tenté une connexion : {self.ban[i]}")
                     # Fermer la connexion du client
                     username = ""
 
@@ -114,7 +121,7 @@ class Server:
                 #print(f"AUTHORIZED,{userid},{username},{access_rights}")
                 client_socket.send(f"AUTHORIZED,{userid},{username},{access_rights}\n".encode('utf-8'))
                 time.sleep(0.5)
-                self.broadcast(f"/General {username} s'est connecté\n", "0.0.0.0")
+                self.broadcast(f"{username} s'est connecté", "0.0.0.0")
 
 
 
@@ -125,6 +132,9 @@ class Server:
                     #print(f"userid:{userid}")
                     try:
                         message = client_socket.recv(1024).decode('utf-8')
+                        messagerecu=message.split()
+                        messagerecu = ' '.join(messagerecu[1:])
+
 
                         #print(message) # debug afin de voir si le message arrive jusque la
                         if message =="bye":
@@ -136,11 +146,47 @@ class Server:
                         self.broadcast(message, client_address)
                         #print(client_address) #affichage de debug
 
-                        # Ecriture du message dans le base de donnée pour modération
-                        cursor = self.db_connection.cursor()
-                        cursor.execute("INSERT INTO generalchat(idsent,message,ipEnvoi) VALUES (%s,%s,%s)",(userid,message,client_address[0]))
-                        self.db_connection.commit()
-                        cursor.close()
+                        # debut de la séquence de test afin d'ecrire le message dans la base de données dans la table correspondante au canal de chat
+                        if message.startswith("/General") :
+                            # Ecriture du message dans le base de donnée pour modération
+                            cursor = self.db_connection.cursor()
+                            cursor.execute("INSERT INTO generalchat(idsent,message,ipEnvoi) VALUES (%s,%s,%s)",(userid,messagerecu,client_address[0]))
+                            self.db_connection.commit()
+                            cursor.close()
+                        elif message.startswith("/Blabla"):
+                            # Ecriture du message dans le base de donnée pour modération
+                            cursor = self.db_connection.cursor()
+                            cursor.execute("INSERT INTO blablachat(idsent,message,ipEnvoi) VALUES (%s,%s,%s)",(userid, messagerecu, client_address[0]))
+                            self.db_connection.commit()
+                            cursor.close()
+                        elif message.startswith("/Informatique"):
+                            # Ecriture du message dans le base de donnée pour modération
+                            cursor = self.db_connection.cursor()
+                            cursor.execute("INSERT INTO infochat(idsent,message,ipEnvoi) VALUES (%s,%s,%s)",
+                                           (userid, messagerecu, client_address[0]))
+                            self.db_connection.commit()
+                            cursor.close()
+                        elif message.startswith("/Marketing"):
+                            # Ecriture du message dans le base de donnée pour modération
+                            cursor = self.db_connection.cursor()
+                            cursor.execute("INSERT INTO marketingchat(idsent,message,ipEnvoi) VALUES (%s,%s,%s)",
+                                           (userid, messagerecu, client_address[0]))
+                            self.db_connection.commit()
+                            cursor.close()
+                        elif message.startswith("/Comptabilite"):
+                            # Ecriture du message dans le base de donnée pour modération
+                            cursor = self.db_connection.cursor()
+                            cursor.execute("INSERT INTO comptachat(idsent,message,ipEnvoi) VALUES (%s,%s,%s)",
+                                           (userid, messagerecu, client_address[0]))
+                            self.db_connection.commit()
+                            cursor.close()
+                        else :
+                            # Ecriture du message dans le base de donnée pour modération
+                            cursor = self.db_connection.cursor()
+                            cursor.execute("INSERT INTO generalchat(idsent,message,ipEnvoi) VALUES (%s,%s,%s)",
+                                           (userid, message, client_address[0]))
+                            self.db_connection.commit()
+                            cursor.close()
 
                     except Exception as e:
                         # En cas d'erreur, fermer la connexion du client
@@ -167,7 +213,7 @@ class Server:
         fonction permettant d'envoyer les message a chaque client
         :param message: message a envoyer a tous les utilisateurs
         :param sender_address: adresse ip de l'expéditeur
-        :return:
+        :return: void
         '''
         # Diffusion du message à tous les clients
         for client in self.clients:
@@ -182,7 +228,7 @@ class Server:
         '''
         fonction permettant de supprimer des client en cas de problèmes ou si le client se déconnecte.
         :param client_socket: objet de la classe socket.socket stockant les parametres du client
-        :return:
+        :return: void
         '''
         # Retirer un client de la liste
 
@@ -195,31 +241,50 @@ class Server:
 
     def commande(self):
         '''
-        fonction permettant a l'administrateur d'écrire des commandes afin d'administer le serveur
-        :return:
+        fonction permettant a l'administrateur d'écrire des commandes afin d'administer le serveur de chat
+        :return: void
         '''
         serverStatus = 1
         print(f"/help ou /? pour afficher l'aide")
         while serverStatus==1:
             commandPrompt = input("root : ")
             if commandPrompt=="/shutdown":
-
+                #on est obligé de faire un delai entre chaque message sinon tout les message se retrouvent dans Blabla
                 self.broadcast("vous allez etre déconnecté dans 1 minute (le serveur va s'arreter)", "0.0.0.0")
-                time.sleep(60)
+                time.sleep(0.5)
+                self.broadcast("/Blabla vous allez etre déconnecté dans 1 minute (le serveur va s'arreter)", "0.0.0.0")
+                time.sleep(0.5)
+                self.broadcast("/Informatique vous allez etre déconnecté dans 1 minute (le serveur va s'arreter)", "0.0.0.0")
+                time.sleep(0.5)
+                self.broadcast("/Marketing vous allez etre déconnecté dans 1 minute (le serveur va s'arreter)", "0.0.0.0")
+                time.sleep(0.5)
+                self.broadcast("/Comptabilite vous allez etre déconnecté dans 1 minute (le serveur va s'arreter)", "0.0.0.0")
+                time.sleep(10)
+
+                print("Arrêt du serveur en cours...")
+                # Fermer tous les sockets clients
                 for client_socket, _ in self.clients:
                     try:
+                        client_socket.send("QUIT".encode('utf-8'))
                         client_socket.shutdown(socket.SHUT_RDWR)
                         client_socket.close()
                     except Exception as e:
                         print(f"Erreur lors du shutdown : {e}")
 
+                # Fermer le socket serveur
                 try:
-                    # Fermer le socket serveur
                     self.server_socket.shutdown(socket.SHUT_RDWR)
                     self.server_socket.close()
+                    print("Serveur déconnecté")
                 except Exception as e:
-                    print(f"erreur lors de l'extinction du serveur {e}")
-                self.serverStatus =0
+                    print(f"Erreur lors de l'extinction du serveur {e}")
+                    os.close(1)
+
+                # Arrêter le thread de commande
+                self.serverstatus = 0
+                quit()
+
+                print("Serveur arrêté")
 
             elif commandPrompt.startswith("/ban"):
                 username = commandPrompt.split()[1]
@@ -268,7 +333,7 @@ class Server:
 
             elif commandPrompt.startswith("/send"):
                 message=commandPrompt.split()
-                message = "/General serveur > "+' '.join(message[1:])
+                message = ' '.join(message[1:])
                 self.broadcast(message,"0.0.0.0")
 
             elif commandPrompt.startswith("/kick"):
@@ -308,16 +373,16 @@ class Server:
                       "- /help permet d'afficher la liste des commandes disponibles\n"
                       "- /ban <arg1> <arg2>(optionnel) permet de bannir un utilisateur et son adresse ip\n"
                       "- /unban <arg1> permet de grâcier un utilisateur banni\n"
-                      "- /send <message> permet d'envoyer un message via le serveur\n"
-                      "- /kick <utilisateur> <jour(s)> permet de bannir temporairement un utilisateur/help")
+                      "- /send /<Canal>(optionnel) <message> permet d'envoyer un message via le serveur\n"
+                      "- /kick <utilisateur> <jour(s)> permet de bannir temporairement un utilisateur")
 
             else:
                 print("commande inconnue")
 
 
 if __name__ == '__main__':
-    serverstatus=1
-    while serverstatus==1:
-        server = Server()
-        serverstatus=Server()
+
+    server = Server()
+    sys.exit()
+
 

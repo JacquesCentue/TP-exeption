@@ -122,7 +122,11 @@ class ChatWindow(QMainWindow):
         self.setWindowTitle('Zabchat')
 
         self.lblChat = QLabel("General")
-
+        self.tbxGeneralChat = QTextEdit(self)
+        self.tbxGeneralChat.setReadOnly(True)
+        self.tbxGeneralChat.setStyleSheet("background-color: rgb(255, 250, 205);")
+        self.tbxGeneralChat.setStyleSheet("color: black;")
+        self.tbxGeneralChat.hide()
 
         self.tbxBlablaChat = QTextEdit(self)
         self.tbxBlablaChat.setReadOnly(True)
@@ -148,11 +152,8 @@ class ChatWindow(QMainWindow):
         self.tbxComptabiliteChat.setStyleSheet("color: orange;")
         self.tbxComptabiliteChat.hide()
 
-        self.tbxGeneralChat = QTextEdit(self)
-        self.tbxGeneralChat.setReadOnly(True)
-        self.tbxGeneralChat.setStyleSheet("background-color: rgb(255, 250, 205);")
-        self.tbxGeneralChat.setStyleSheet("color: black;")
-        self.tbxGeneralChat.show()
+
+
 
         self.input_line = QLineEdit(self)
         # Envoi du message si l'utilisateur appuie sur la touche entrer
@@ -163,7 +164,10 @@ class ChatWindow(QMainWindow):
 
         #definission de la combobox des diférents cannaux
         self.cbxCannaux = QComboBox(self)
+
+        self.selectChat("General")
         self.cbxCannaux.addItem("General")
+        self.selectChat(self.lblChat.text())
         self.cbxCannaux.addItem("Blabla")
         if self.droits >= 5:
             self.cbxCannaux.addItem("Informatique")
@@ -171,6 +175,8 @@ class ChatWindow(QMainWindow):
             self.cbxCannaux.addItem("Marketing")
         if self.droits == 2 or self.droits == 4 or self.droits == 6 or self.droits == 8:
             self.cbxCannaux.addItem("Comptabilite")
+
+
 
         self.cbxCannaux.currentTextChanged.connect(self.selectChat)
 
@@ -228,6 +234,7 @@ class ChatWindow(QMainWindow):
 
         elif self.lblChat.text() == "Comptabilite":
             try:
+                #code de detection de droit -> ceci est le code que j'avais mis en place avant d'avoir mis en place la detection des droits a l'ouverture de la fenetre
                 if self.droits== 2 or self.droits==4 or self.droits==6 or self.droits==8:
                     self.tbxGeneralChat.hide()
                     self.tbxBlablaChat.hide()
@@ -246,7 +253,8 @@ class ChatWindow(QMainWindow):
 
 
     def receive_messages(self):
-        while True:
+        client_status=1
+        while client_status==1:
             try:
                 print(self.droits)
                 # Réception du message du serveur
@@ -264,7 +272,7 @@ class ChatWindow(QMainWindow):
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
                     self.tbxMarketingChat.append(messagetransmi)
-                elif message.startswith("/Comptabilite") and self.droits== 2 or self.droits==4 or self.droits==6 or self.droits==8:
+                elif message.startswith("/Comptabilite") and (self.droits== 2 or self.droits==4 or self.droits==6 or self.droits==8):
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
                     self.tbxComptabiliteChat.append(messagetransmi)
@@ -272,11 +280,14 @@ class ChatWindow(QMainWindow):
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
                     self.tbxGeneralChat.append(messagetransmi)
+                elif message.startswith("AUTHORIZED"):
+                    message = (f"{self.utilisateur} s'est connecté")
+
+                    self.client_socket.send(message.encode('utf-8'))
+                    print(message)
                 else:
                     self.tbxGeneralChat.append(message)
 
-                print(message)
-                print(messagetransmi)
 
             except Exception as e:
                 # En cas d'erreur, fermer la connexion du client
@@ -291,9 +302,9 @@ class ChatWindow(QMainWindow):
         if message != "":
             if message !="bye":
 
-                print(self.lblChat.text())
+
                 message = (f"/{self.lblChat.text()} {self.utilisateur}> {self.input_line.text()}")
-                print(message)
+                #print(message)
                 self.client_socket.send(message.encode('utf-8'))
                 #self.tbxGeneralChat.append(f"vous> {message}")
 
