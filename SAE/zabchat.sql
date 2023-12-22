@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le : mar. 19 déc. 2023 à 14:55
+-- Généré le : ven. 22 déc. 2023 à 14:24
 -- Version du serveur : 8.2.0
 -- Version de PHP : 8.2.13
 
@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS `ban` (
 --
 
 INSERT INTO `ban` (`ban`, `dateban`, `dateUnban`) VALUES
-('kick', '2023-12-15 11:18:48', '2023-12-16 11:18:49');
+('ban', '2023-12-22 14:31:41', '5000-01-01 00:00:00'),
+('kick', '2023-12-22 14:30:05', '2023-12-23 14:30:06');
 
 -- --------------------------------------------------------
 
@@ -64,7 +65,8 @@ CREATE TABLE IF NOT EXISTS `blablachat` (
 --
 
 INSERT INTO `blablachat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
-(2, 'test> test blabla', '2023-12-19 10:34:10', '127.0.0.1');
+(1, 'Jacques> test bla bla', '2023-12-22 14:26:46', '127.0.0.1'),
+(20, 'ban> je veut me faire ban', '2023-12-22 14:31:32', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -86,7 +88,7 @@ CREATE TABLE IF NOT EXISTS `comptachat` (
 --
 
 INSERT INTO `comptachat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
-(2, 'test> test comptabilité', '2023-12-19 10:34:30', '127.0.0.1');
+(1, 'Jacques> test compta', '2023-12-22 14:27:11', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -108,21 +110,7 @@ CREATE TABLE IF NOT EXISTS `generalchat` (
 --
 
 INSERT INTO `generalchat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
-(2, 'test> test general', '2023-12-19 10:34:02', '127.0.0.1'),
-(2, 'test> tout fonctionne corectement', '2023-12-19 10:35:52', '127.0.0.1'),
-(2, 'test> test', '2023-12-19 10:50:47', '127.0.0.1'),
-(2, 'test> non pas la deco', '2023-12-19 10:51:01', '127.0.0.1'),
-(2, 'test> salut', '2023-12-19 10:54:32', '127.0.0.1'),
-(2, 'test> salut', '2023-12-19 11:01:16', '127.0.0.1'),
-(2, 'test> saliut', '2023-12-19 11:53:23', '127.0.0.1'),
-(2, 'test> laz', '2023-12-19 11:53:26', '127.0.0.1'),
-(2, 'test> sdf', '2023-12-19 11:54:26', '127.0.0.1'),
-(2, 'test> earger', '2023-12-19 11:54:29', '127.0.0.1'),
-(2, 'test> fdgdfg', '2023-12-19 11:56:07', '127.0.0.1'),
-(2, 'test> salut', '2023-12-19 11:56:53', '127.0.0.1'),
-(2, 'test> aezr', '2023-12-19 11:57:03', '127.0.0.1'),
-(2, 'test> rt', '2023-12-19 11:57:15', '127.0.0.1'),
-(2, 'test> test', '2023-12-19 12:00:07', '127.0.0.1');
+(1, 'Jacques> Test general', '2023-12-22 14:26:35', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -138,6 +126,13 @@ CREATE TABLE IF NOT EXISTS `infochat` (
   `ipEnvoi` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   KEY `iduser` (`idsent`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `infochat`
+--
+
+INSERT INTO `infochat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
+(1, 'Jacques> test info', '2023-12-22 14:26:53', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -159,7 +154,7 @@ CREATE TABLE IF NOT EXISTS `marketingchat` (
 --
 
 INSERT INTO `marketingchat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
-(2, 'test> test marketing', '2023-12-19 10:34:21', '127.0.0.1');
+(1, 'Jacques> test marketing', '2023-12-22 14:27:02', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -171,24 +166,26 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE IF NOT EXISTS `user` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `password` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `password` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `dateInscription` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `rights` int NOT NULL,
+  `rights` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `user`
 --
 
 INSERT INTO `user` (`user_id`, `username`, `password`, `dateInscription`, `rights`) VALUES
-(1, 'Jacques', 'test', '2023-12-08 11:05:32', 4),
-(2, 'test', 'test', '2023-12-05 15:49:05', 4),
-(5, 'salut', 'salut', '2023-12-08 10:28:22', 1),
-(8, 'test2', 'test', '2023-12-12 17:38:05', 0),
-(9, 'kick', 'kick', '2023-12-15 11:17:30', 4),
-(10, 'visiteur', 'test', '2023-12-15 15:13:13', 1);
+(1, 'Jacques', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', '2023-12-08 11:05:32', 8),
+(2, 'test', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', '2023-12-05 15:49:05', 6),
+(5, 'salut', 'ec9c3a34e791bda21bbcb69ea0eb875857497e0d48c75771b3d1adb5073ce791', '2023-12-08 10:28:22', 1),
+(8, 'test2', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', '2023-12-12 17:38:05', 0),
+(9, 'kick', '0db10f2c2f332cd27cf1407fa16c686337b2b23f46125d6e17740dbfc6df427e', '2023-12-15 11:17:30', 4),
+(10, 'visiteur', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', '2023-12-15 15:13:13', 1),
+(18, 'test10', '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', '2023-12-21 15:12:37', 1),
+(20, 'ban', 'b2a96c3d3fc2b6accdb4816e22467a7448defe3208a72a79a96d671e4087106e', '2023-12-22 14:31:00', 8);
 
 --
 -- Contraintes pour les tables déchargées
