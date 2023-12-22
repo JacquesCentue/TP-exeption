@@ -2,10 +2,12 @@ import sys
 import time
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QTextEdit, QLineEdit, QPushButton, QLabel, \
-    QDialog, QMessageBox,QComboBox
+    QDialog, QMessageBox, QComboBox, QMenu, QAction
+from PyQt5.QtGui import QKeySequence
 import socket
 import threading
 import cryptocode
+import hashlib
 
 class AuthWindow(QDialog):
     def __init__(self):
@@ -54,6 +56,7 @@ class AuthWindow(QDialog):
             username = self.input_username.text()
             password = self.input_password.text()
             #password= cryptocode.encrypt(password, "zabchat")
+            password = hashlib.sha256(password.encode("utf-8")).hexdigest()
             print(password)
 
             # Envoyer le nom d'utilisateur et le mot de passe au serveur
@@ -67,6 +70,7 @@ class AuthWindow(QDialog):
 
             # Recevoir la réponse du serveur
             response = self.client_socket.recv(1024).decode('utf-8')
+            response = cryptocode.decrypt(response, "uhgkO4SG5SETzgs54e/ù")
             if response.startswith("AUTHORIZED"):
                 # Analyser la réponse pour obtenir le numéro d'utilisateur et les droits d'accès, séparé par une virgule
                 _,userid, utilisateur, droits = response.split(',')
@@ -90,6 +94,68 @@ class AuthWindow(QDialog):
     def get_credentials(self):
         return self.userid, self.utilisateur, self.droits
 
+class ChangePasswordWindow(QDialog):
+    def __init__(self, utilisateur, client_socket):
+        super().__init__()
+
+        self.initUI()
+        self.utilisateur = utilisateur
+        self.client_socket = client_socket
+
+
+    def initUI(self):
+        self.setGeometry(300, 300, 300, 200)
+        self.setWindowTitle('Changer le mot de passe')
+
+        self.label_new_password = QLabel('Nouveau mot de passe:', self)
+        self.input_new_password = QLineEdit(self)
+        self.input_new_password.setEchoMode(QLineEdit.Password)
+
+        self.label_confirm_password = QLabel('Confirmer le mot de passe:', self)
+        self.input_confirm_password = QLineEdit(self)
+        self.input_confirm_password.setEchoMode(QLineEdit.Password)
+
+        self.change_button = QPushButton('Changer le mot de passe', self)
+        self.change_button.clicked.connect(self.change_password)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.label_new_password)
+        layout.addWidget(self.input_new_password)
+        layout.addWidget(self.label_confirm_password)
+        layout.addWidget(self.input_confirm_password)
+        layout.addWidget(self.change_button)
+
+        self.setLayout(layout)
+
+    def change_password(self):
+        new_password = self.input_new_password.text()
+        confirm_password = self.input_confirm_password.text()
+
+
+
+        # Vérifiez que les mots de passe correspondent
+        if new_password == confirm_password:
+            try:
+                new_password = hashlib.sha256(new_password.encode("utf-8")).hexdigest()
+                # Envoyez le nouvel utilisateur et le mot de passe au serveur pour la mise à jour
+                message = f"/ChangePassword {self.utilisateur} {new_password}"
+                message = cryptocode.encrypt(message, "earg45rsy72zerg")
+                self.client_socket.send(message.encode('utf-8'))
+
+                # Attendez la réponse du serveur
+                response = self.client_socket.recv(1024).decode('utf-8')
+
+                if response.startswith("/PasswordChanged"):
+                    # Mot de passe changé avec succès
+                    QMessageBox.information(self, 'Changement de mot de passe', 'Mot de passe changé avec succès!')
+                    self.accept()
+                else:
+                    QMessageBox.critical(self, 'Erreur', 'Échec du changement de mot de passe.')
+            except Exception as e:
+                print(f"Erreur lors du changement de mot de passe: {e}")
+        else:
+            QMessageBox.critical(self, 'Erreur', 'Les mots de passe ne correspondent pas.')
+
 
 class ChatWindow(QMainWindow):
     def __init__(self,userid, utilisateur, droits, password):
@@ -105,6 +171,7 @@ class ChatWindow(QMainWindow):
         self.droits = droits
         self.password = password
         self.initUI()
+        self.password = hashlib.sha256(password.encode("utf-8")).hexdigest()
 
         # Connexion au serveur
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -116,6 +183,44 @@ class ChatWindow(QMainWindow):
         time.sleep(1)
         # Créer un thread pour gérer la réception des messages, l'envoi se situe dans le thread principal
         threading.Thread(target=self.receive_messages).start()
+
+        self.createActions()
+        self.createMenuBar()
+
+    def createMenuBar(self):
+        menuBar = self.menuBar()
+
+        file = menuBar.addMenu("Option")
+        file.addAction(self.actChangePassword)
+        file.addAction(self.actExit)
+
+
+    def createActions(self):
+
+        self.actChangePassword = QAction("Changer de mot de passe", self)
+        self.actChangePassword.setShortcut(QKeySequence("Ctrl+P"))
+        self.actChangePassword.triggered.connect(self.open_change_password_window)
+
+
+        self.actExit = QAction("Exit", self)
+        self.actExit.setShortcut(QKeySequence("Alt+F4"))
+        self.actExit.setStatusTip("Exit")
+        # La méthode close est directement fournie par la classe QMainWindow.
+
+        self.actExit.triggered.connect(self.fermeture)
+
+    def fermeture(self):
+        self.client_socket.close()
+        self.close()
+        app.exit(0)
+        sys.exit(0)
+
+    def open_change_password_window(self):
+        change_password_window = ChangePasswordWindow(self.utilisateur,self.client_socket)
+        if change_password_window.exec() == QDialog.Accepted:
+            # Vous pouvez ajouter le code ici pour envoyer le nouveau mot de passe au serveur si nécessaire
+            print("Mot de passe changé avec succès!")
+
 
     def initUI(self):
         self.setGeometry(100, 100, 800, 600)
@@ -198,7 +303,7 @@ class ChatWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def selectChat(self, value,):
-        print("combobox changed", value)
+        #print("combobox changed", value)
         self.lblChat.setText(value)
         if self.lblChat.text() == "General":
             self.tbxGeneralChat.show()
@@ -255,16 +360,21 @@ class ChatWindow(QMainWindow):
     def receive_messages(self):
         client_status=1
         while client_status==1:
+
             try:
-                print(self.droits)
+                #print(self.droits)
                 # Réception du message du serveur
                 message = self.client_socket.recv(1024).decode('utf-8')
+                print(f"message crypté recu: {message}")
+                message = cryptocode.decrypt(message, "uhgkO4SG5SETzgs54e/ù")
+                print(f"{message}")
+                print(self.droits)
 
                 if message.startswith("/Blabla"):
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
                     self.tbxBlablaChat.append(messagetransmi)
-                elif message.startswith("/Informatique") and self.droits <= 5:
+                elif message.startswith("/Informatique") and (self.droits ==5 or self.droits==6 or self.droits==7 or self.droits==8):
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
                     self.tbxInformatiqueChat.append(messagetransmi)
@@ -280,13 +390,17 @@ class ChatWindow(QMainWindow):
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
                     self.tbxGeneralChat.append(messagetransmi)
-                elif message.startswith("AUTHORIZED"):
-                    message = (f"{self.utilisateur} s'est connecté")
+                elif message.startswith("AUTHORIZED") or message.startswith("/ChangePassword"):
 
-                    self.client_socket.send(message.encode('utf-8'))
                     print(message)
+                elif message=="QUIT":
+                    self.client_socket.close()
+                    app.exit(0)
+                    sys.exit(0)
+
                 else:
                     self.tbxGeneralChat.append(message)
+                    print('on arrive la')
 
 
             except Exception as e:
@@ -304,6 +418,8 @@ class ChatWindow(QMainWindow):
 
 
                 message = (f"/{self.lblChat.text()} {self.utilisateur}> {self.input_line.text()}")
+                #on chiffre le message afin qu'il soi cachés aux clients frauduleux
+                message = cryptocode.encrypt(message, "earg45rsy72zerg")
                 #print(message)
                 self.client_socket.send(message.encode('utf-8'))
                 #self.tbxGeneralChat.append(f"vous> {message}")
@@ -328,3 +444,5 @@ if __name__ == '__main__':
         client_window = ChatWindow(userid,utilisateur, droits, auth_window.input_password.text())
         client_window.show()
         sys.exit(app.exec_())
+        sys.exit(0)
+
