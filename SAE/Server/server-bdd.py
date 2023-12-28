@@ -190,6 +190,7 @@ class Server:
                             self.db_connection.commit()
                             cursor.close()
                         elif message.startswith("/ChangePassword"):
+
                             cursor = self.db_connection.cursor()
                             cursor.execute("UPDATE `user` SET `password` = %s WHERE `user`.`username` = %s",(messagerecu[2],messagerecu[1]))
                             self.db_connection.commit()

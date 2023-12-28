@@ -71,6 +71,8 @@ class AuthWindow(QDialog):
             # Recevoir la réponse du serveur
             response = self.client_socket.recv(1024).decode('utf-8')
             response = cryptocode.decrypt(response, "uhgkO4SG5SETzgs54e/ù")
+            
+            #si le message  commance avec "AUTHORIZED" on accepte la boite de dialogue
             if response.startswith("AUTHORIZED"):
                 # Analyser la réponse pour obtenir le numéro d'utilisateur et les droits d'accès, séparé par une virgule
                 _,userid, utilisateur, droits = response.split(',')
@@ -95,6 +97,9 @@ class AuthWindow(QDialog):
         return self.userid, self.utilisateur, self.droits
 
 class ChangePasswordWindow(QDialog):
+    '''
+    classe qui permet d'afficher une fenetre de changement de mot de passe de l'utilisateur déjà connecté
+    '''
     def __init__(self, utilisateur, client_socket):
         super().__init__()
 
@@ -104,32 +109,40 @@ class ChangePasswordWindow(QDialog):
 
 
     def initUI(self):
+        '''
+        Fonction qui permet de définir les éléments de l'interface utilisateur
+        :return: void
+        '''
         self.setGeometry(300, 300, 300, 200)
         self.setWindowTitle('Changer le mot de passe')
 
-        self.label_new_password = QLabel('Nouveau mot de passe:', self)
-        self.input_new_password = QLineEdit(self)
-        self.input_new_password.setEchoMode(QLineEdit.Password)
+        self.lblNouvMDP = QLabel('Nouveau mot de passe:', self)
+        self.tbxNouvMDP = QLineEdit(self)
+        self.tbxNouvMDP.setEchoMode(QLineEdit.Password)
 
-        self.label_confirm_password = QLabel('Confirmer le mot de passe:', self)
-        self.input_confirm_password = QLineEdit(self)
-        self.input_confirm_password.setEchoMode(QLineEdit.Password)
+        self.lblConfirm = QLabel('Confirmer le mot de passe:', self)
+        self.tbxConfirm = QLineEdit(self)
+        self.tbxConfirm.setEchoMode(QLineEdit.Password)
 
-        self.change_button = QPushButton('Changer le mot de passe', self)
-        self.change_button.clicked.connect(self.change_password)
+        self.btnChangerMDP = QPushButton('Changer le mot de passe', self)
+        self.btnChangerMDP.clicked.connect(self.change_password)
 
         layout = QVBoxLayout()
-        layout.addWidget(self.label_new_password)
-        layout.addWidget(self.input_new_password)
-        layout.addWidget(self.label_confirm_password)
-        layout.addWidget(self.input_confirm_password)
-        layout.addWidget(self.change_button)
+        layout.addWidget(self.lblNouvMDP)
+        layout.addWidget(self.tbxNouvMDP)
+        layout.addWidget(self.lblConfirm)
+        layout.addWidget(self.tbxConfirm)
+        layout.addWidget(self.btnChangerMDP)
 
         self.setLayout(layout)
 
     def change_password(self):
-        new_password = self.input_new_password.text()
-        confirm_password = self.input_confirm_password.text()
+        '''
+        fonction qui permet de changer le mot de passe de l'utilisateur il faut que les 2 mots de passe soient identiques
+        :return:
+        '''
+        new_password = self.tbxNouvMDP.text()
+        confirm_password = self.tbxConfirm.text()
 
 
 
@@ -365,11 +378,10 @@ class ChatWindow(QMainWindow):
                 #print(self.droits)
                 # Réception du message du serveur
                 message = self.client_socket.recv(1024).decode('utf-8')
-                print(f"message crypté recu: {message}")
+                #on décrypte le message avec le mot de passe
                 message = cryptocode.decrypt(message, "uhgkO4SG5SETzgs54e/ù")
-                print(f"{message}")
-                print(self.droits)
-
+               
+                #on determine a quel cannal le message apartient
                 if message.startswith("/Blabla"):
                     messagetransmi = message.split()
                     messagetransmi = ' '.join(messagetransmi[1:])
@@ -400,7 +412,6 @@ class ChatWindow(QMainWindow):
 
                 else:
                     self.tbxGeneralChat.append(message)
-                    print('on arrive la')
 
 
             except Exception as e:

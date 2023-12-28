@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le : ven. 22 déc. 2023 à 14:24
--- Version du serveur : 8.2.0
--- Version de PHP : 8.2.13
+-- Généré le : jeu. 28 déc. 2023 à 09:00
+-- Version du serveur : 8.0.31
+-- Version de PHP : 8.0.26
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -16,13 +16,16 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
-
+CREATE USER 'zabchat'@'%' IDENTIFIED BY 'zabchat';GRANT USAGE ON *.* TO 'zabchat'@'%';ALTER USER 'zabchat'@'%' REQUIRE NONE WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;
+GRANT SELECT, INSERT, UPDATE ON `zabchat`.* TO 'zabchat'@'%'; ALTER USER 'zabchat'@'%' ;
 --
 -- Base de données : `zabchat`
 --
 CREATE DATABASE IF NOT EXISTS `zabchat` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `zabchat`;
+GRANT USAGE ON *.* TO `zabchat`@`%`;
 
+GRANT SELECT, INSERT, UPDATE ON `zabchat`.* TO `zabchat`@`%`;
 -- --------------------------------------------------------
 
 --
@@ -56,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `blablachat` (
   `idsent` int NOT NULL,
   `message` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `dateEnvoi` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `ipEnvoi` varchar(15) COLLATE utf8mb4_general_ci NOT NULL,
+  `ipEnvoi` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   KEY `idsent` (`idsent`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -66,7 +69,8 @@ CREATE TABLE IF NOT EXISTS `blablachat` (
 
 INSERT INTO `blablachat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
 (1, 'Jacques> test bla bla', '2023-12-22 14:26:46', '127.0.0.1'),
-(20, 'ban> je veut me faire ban', '2023-12-22 14:31:32', '127.0.0.1');
+(20, 'ban> je veut me faire ban', '2023-12-22 14:31:32', '127.0.0.1'),
+(2, 'test> salut', '2023-12-28 09:41:28', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -77,9 +81,9 @@ INSERT INTO `blablachat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
 DROP TABLE IF EXISTS `comptachat`;
 CREATE TABLE IF NOT EXISTS `comptachat` (
   `idsent` int NOT NULL,
-  `message` varchar(1024) COLLATE utf8mb4_general_ci NOT NULL,
+  `message` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `dateEnvoi` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `ipEnvoi` varchar(15) COLLATE utf8mb4_general_ci NOT NULL,
+  `ipEnvoi` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   KEY `iduser` (`idsent`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -88,7 +92,10 @@ CREATE TABLE IF NOT EXISTS `comptachat` (
 --
 
 INSERT INTO `comptachat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
-(1, 'Jacques> test compta', '2023-12-22 14:27:11', '127.0.0.1');
+(1, 'Jacques> test compta', '2023-12-22 14:27:11', '127.0.0.1'),
+(2, 'test> salut', '2023-12-28 09:41:38', '127.0.0.1'),
+(2, 'test> oui', '2023-12-28 09:42:11', '127.0.0.1'),
+(2, 'test> salut', '2023-12-28 09:42:21', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -110,7 +117,11 @@ CREATE TABLE IF NOT EXISTS `generalchat` (
 --
 
 INSERT INTO `generalchat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
-(1, 'Jacques> Test general', '2023-12-22 14:26:35', '127.0.0.1');
+(1, 'Jacques> Test general', '2023-12-22 14:26:35', '127.0.0.1'),
+(2, 'test> salut', '2023-12-28 09:41:17', '127.0.0.1'),
+(2, 'test> test', '2023-12-28 09:43:53', '127.0.0.1'),
+(2, 'test> oui*', '2023-12-28 09:43:56', '127.0.0.1'),
+(2, 'test> on ne recoit plus rien', '2023-12-28 09:44:03', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -121,7 +132,7 @@ INSERT INTO `generalchat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
 DROP TABLE IF EXISTS `infochat`;
 CREATE TABLE IF NOT EXISTS `infochat` (
   `idsent` int NOT NULL,
-  `message` varchar(1024) COLLATE utf8mb4_general_ci NOT NULL,
+  `message` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `dateEnvoi` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ipEnvoi` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   KEY `iduser` (`idsent`)
@@ -132,7 +143,8 @@ CREATE TABLE IF NOT EXISTS `infochat` (
 --
 
 INSERT INTO `infochat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
-(1, 'Jacques> test info', '2023-12-22 14:26:53', '127.0.0.1');
+(1, 'Jacques> test info', '2023-12-22 14:26:53', '127.0.0.1'),
+(2, 'test> salut', '2023-12-28 09:41:33', '127.0.0.1');
 
 -- --------------------------------------------------------
 
@@ -143,9 +155,9 @@ INSERT INTO `infochat` (`idsent`, `message`, `dateEnvoi`, `ipEnvoi`) VALUES
 DROP TABLE IF EXISTS `marketingchat`;
 CREATE TABLE IF NOT EXISTS `marketingchat` (
   `idsent` int NOT NULL,
-  `message` varchar(1024) COLLATE utf8mb4_general_ci NOT NULL,
+  `message` varchar(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `dateEnvoi` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `ipEnvoi` varchar(15) COLLATE utf8mb4_general_ci NOT NULL,
+  `ipEnvoi` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   KEY `iduser` (`idsent`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
