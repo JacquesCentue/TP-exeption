@@ -289,7 +289,7 @@ class Server:
                         self.broadcast("/Marketing vous allez etre déconnecté dans 1 minute (le serveur va s'arreter)", "0.0.0.0")
                         time.sleep(0.5)
                         self.broadcast("/Comptabilite vous allez etre déconnecté dans 1 minute (le serveur va s'arreter)", "0.0.0.0")
-                        time.sleep(10)
+                        time.sleep(60)
 
                         print("Arrêt du serveur en cours...")
                         # Fermer tous les sockets clients
@@ -329,12 +329,7 @@ class Server:
                             self.db_connection.commit()
                             cursor.close()
                             print(f"{username} et {arg2} on été bannis")
-                            for client in self.clients:
-                                if client[1][0] == arg2 and client[1][0] != self.client_address[0]:  # Comparaison avec l'adresse IP
-                                    # Si l'adresse IP est connectée et n'est pas celle de l'administrateur, déconnecte le client
-                                    client[0].send("QUIT".encode('utf-8'))
-                                    self.remove_client(client[0])
-                                    print(f"Déconnexion de l'utilisateur avec l'adresse IP {arg2}")
+                            
 
                         except IndexError:
                             # Si aucun deuxième argument n'est fourni
@@ -422,12 +417,7 @@ class Server:
                         except Exception as e:
                             print(f"Erreur lors du Timeout : {e}")
 
-                        for client in self.clients:
-                            if client[1][0] == username:  # Comparaison avec l'adresse IP
-                                # Si l'adresse IP est connectée, déconnecte le client
-                                client[0].send("QUIT".encode('utf-8'))
-                                self.remove_client(client[0])
-                                print(f"Déconnexion de l'utilisateur avec l'adresse IP {username}")
+                        
 
                     elif commandPrompt=="/help" or commandPrompt == "/?":
                         print("voici la liste des commandes :\n"
