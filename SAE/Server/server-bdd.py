@@ -25,7 +25,7 @@ class Server:
             database='zabchat'
         )
 
-        #liste de tout les clients connectés
+        #liste de tous les clients connectés
         self.clients = []
 
         # Création du socket serveur
@@ -438,7 +438,7 @@ class Server:
                           "- /kick <utilisateur> <jour(s)> permet de bannir temporairement un utilisateur\n"
                           "- /droit <numero de droit> <utilisateur> permet de changer les droits de l'utilisateur -> droit se fait par rapport au numéro: voir readme\n"
                           "- /createuser <utilisateur> <mot de passe> <numero de droit> permet de créer un utilisateur via la console\n"
-                          "- /deluser <utilisateur> permet de supprimer un utilisateur via la console"
+                          "- /deluser <utilisateur> permet de supprimer un utilisateur via la console\n"
                           "- /mdp <utilisateur> <mot de passe> permet a l'administrateur de changer le mot de passe depuis la console")
 
                     elif command=="/droit":
