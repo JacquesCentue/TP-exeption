@@ -25,7 +25,7 @@ CREATE DATABASE IF NOT EXISTS `zabchat` DEFAULT CHARACTER SET utf8mb4 COLLATE ut
 USE `zabchat`;
 GRANT USAGE ON *.* TO `zabchat`@`%`;
 
-GRANT SELECT, INSERT, UPDATE ON `zabchat`.* TO `zabchat`@`%`;
+GRANT SELECT, INSERT, UPDATE, DELETE ON `zabchat`.* TO `zabchat`@`%`;
 -- --------------------------------------------------------
 
 --

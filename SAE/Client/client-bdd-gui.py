@@ -16,7 +16,7 @@ class AuthWindow(QDialog):
         self.initUI()
 
         # Configuration du client
-        self.HOST = '127.0.0.1'
+        self.HOST = '192.168.44.132'
         self.PORT = 55555
         self.utilisateur = None
         self.droits = None
@@ -164,7 +164,7 @@ class ChatWindow(QMainWindow):
 
 
         # Configuration du client
-        self.HOST = '127.0.0.1'
+        self.HOST = '192.168.44.132'
         self.PORT = 55555
         self.userid=userid
         self.utilisateur = utilisateur

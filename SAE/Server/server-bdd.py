@@ -21,7 +21,7 @@ class Server:
         self.db_connection = mysql.connector.connect(
             host='localhost',
             user='zabchat',
-            password='zabchat',
+            password='sdfghjkl',
             database='zabchat'
         )
 
