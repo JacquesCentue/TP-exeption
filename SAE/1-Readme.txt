@@ -31,6 +31,9 @@ Comme leurs noms l'indique ces 3 répertoires contiennent chacun des fichiers sp
 BDD : zabchat | sdfghjkl
 application : (test | test) ou (salut | salut) ou (Jacques | test) -> a vous de créer des comptes via le serveur.
 
+les lignes a changer pour le clients afin de définir vous meme votre adresse IP :
+- ligne 20
+- ligne 196
 
  les autres fichiers que vous trouverez dans ce repertoire sont des backup plus anciennes que je laisse a votre disposition
  
